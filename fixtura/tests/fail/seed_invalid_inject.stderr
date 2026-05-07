@@ -1,0 +1,11 @@
+error: expected integer literal
+ --> tests/fail/seed_invalid_inject.rs:8:26
+  |
+8 | #[fixtura::inject(seed = "hello")]
+  |                          ^^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/seed_invalid_inject.rs:11:2
+   |
+11 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/seed_invalid_inject.rs`

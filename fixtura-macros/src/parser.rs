@@ -1,5 +1,29 @@
-use proc_macro2::Span;
-use syn::{parse::ParseStream, punctuated::Punctuated, Expr, FnArg, Ident, Token, Type};
+use proc_macro2::{Span, TokenStream};
+use syn::{parse::ParseStream, punctuated::Punctuated, Expr, FnArg, Ident, LitInt, Token, Type};
+
+pub fn parse_seed(attr: TokenStream) -> syn::Result<Option<u64>> {
+    if attr.is_empty() {
+        return Ok(None);
+    }
+    syn::parse::Parser::parse2(
+        |input: ParseStream| {
+            let ident: Ident = input.parse()?;
+            if ident != "seed" {
+                return Err(syn::Error::new(
+                    ident.span(),
+                    "expected `seed = <u64>`, e.g. `#[fixtura::test(seed = 42)]`",
+                ));
+            }
+            input.parse::<Token![=]>()?;
+            let lit: LitInt = input.parse()?;
+            let value: u64 = lit.base10_parse().map_err(|_| {
+                syn::Error::new(lit.span(), "seed must be a u64 literal, e.g. `seed = 42`")
+            })?;
+            Ok(Some(value))
+        },
+        attr,
+    )
+}
 
 pub struct FieldOverride {
     pub path: Vec<Ident>,

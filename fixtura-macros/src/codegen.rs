@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Literal, TokenStream};
 use quote::{quote, quote_spanned};
 use syn::{visit::Visit, Ident, ItemFn, Signature};
 
@@ -41,7 +41,7 @@ fn check_forward_refs(args: &[Arg]) -> syn::Result<()> {
     Ok(())
 }
 
-pub fn expand(input: ItemFn) -> TokenStream {
+pub fn expand(input: ItemFn, seed: Option<u64>) -> TokenStream {
     if let Some(async_token) = &input.sig.asyncness {
         return syn::Error::new_spanned(
             async_token,
@@ -49,14 +49,14 @@ pub fn expand(input: ItemFn) -> TokenStream {
         )
         .to_compile_error();
     }
-    expand_inner(input, Some(quote! { #[test] }))
+    expand_inner(input, Some(quote! { #[test] }), seed)
 }
 
-pub fn expand_inject(input: ItemFn) -> TokenStream {
-    expand_inner(input, None)
+pub fn expand_inject(input: ItemFn, seed: Option<u64>) -> TokenStream {
+    expand_inner(input, None, seed)
 }
 
-fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>) -> TokenStream {
+fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>) -> TokenStream {
     let ItemFn {
         attrs,
         vis,
@@ -73,6 +73,7 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>) -> TokenStream {
         return e.to_compile_error();
     }
 
+    let rng_preamble = rng_preamble(seed, args.is_empty());
     let bindings = args.iter().map(binding);
     // When emitting our own #[test], filter it from attrs to avoid duplication.
     let attrs = attrs
@@ -89,9 +90,31 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>) -> TokenStream {
         #(#attrs)*
         #vis #sig {
             use ::fake::Fake;
+            #rng_preamble
             #(#bindings)*
             #(#stmts)*
         }
+    }
+}
+
+fn rng_preamble(seed: Option<u64>, no_args: bool) -> TokenStream {
+    if no_args {
+        return quote! {};
+    }
+    let seed_expr = match seed {
+        Some(n) => {
+            let lit = Literal::u64_suffixed(n);
+            quote! { #lit }
+        }
+        None => quote! { ::fake::rand::random::<u64>() },
+    };
+    quote! {
+        let __fixtura_seed: u64 = #seed_expr;
+        eprintln!("[fixtura] seed = {}", __fixtura_seed);
+        let mut __fixtura_rng = {
+            use ::fake::rand::SeedableRng;
+            ::fake::rand::rngs::StdRng::seed_from_u64(__fixtura_seed)
+        };
     }
 }
 
@@ -101,7 +124,7 @@ fn binding(arg: &Arg) -> TokenStream {
 
     if arg.overrides.is_empty() {
         return quote_spanned! { arg.span =>
-            let #ident: #ty = ::fake::Faker.fake();
+            let #ident: #ty = ::fake::Faker.fake_with_rng(&mut __fixtura_rng);
         };
     }
 
@@ -117,7 +140,7 @@ fn binding(arg: &Arg) -> TokenStream {
 
     quote_spanned! { arg.span =>
         let #ident: #ty = {
-            let mut v: #ty = ::fake::Faker.fake();
+            let mut v: #ty = ::fake::Faker.fake_with_rng(&mut __fixtura_rng);
             #(#override_stmts)*
             v
         };
