@@ -75,7 +75,12 @@ fn label_contains_name_and_email(user: User) {
 
 #[fixtura::test]
 fn subtotal_is_zero_when_quantity_is_zero(product: Product) {
-    let order = Order { quantity: 0, id: 1, user_id: 1, product_id: product.id };
+    let order = Order {
+        quantity: 0,
+        id: 1,
+        user_id: 1,
+        product_id: product.id,
+    };
     assert_eq!(subtotal_cents(&order, &product), 0);
 }
 
