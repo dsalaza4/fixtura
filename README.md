@@ -10,7 +10,7 @@ Built on [`fake-rs`](https://github.com/cksac/fake-rs).
 
 ```toml
 [dev-dependencies]
-fixtura = "0.2.0"
+fixtura = "0.3.0"
 fake = { version = "5", features = ["derive"] }
 ```
 
@@ -110,4 +110,4 @@ fn order_belongs_to_user(
 
 ## Status
 
-Early development — v0.2 available. Seeded randomness and async support are coming. Feedback welcome — open an issue or start a discussion.
+Early development — v0.3 available. Seeded randomness and async support are coming. Feedback welcome — open an issue or start a discussion.
