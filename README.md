@@ -10,7 +10,7 @@ Built on [`fake-rs`](https://github.com/cksac/fake-rs).
 
 ```toml
 [dev-dependencies]
-fixtura = "0.3.0"
+fixtura = "0.4.0"
 fake = { version = "5", features = ["derive"] }
 ```
 
@@ -104,10 +104,45 @@ fn order_belongs_to_user(
 }
 ```
 
+**Async.** Use `#[fixtura::inject]` with any async test runner.
+
+```rust
+#[tokio::test]
+#[fixtura::inject]
+async fn payment_fails_for_inactive_user(
+    #[with(active = false)] user: User,
+    #[with(user_id = user.id)] order: Order,
+) {
+    assert!(process_payment(&user, &order).await.is_err());
+}
+```
+
 **Compatible.** Composes with `#[should_panic]` and any other test attribute.
+
+---
+
+## Async tests
+
+`#[fixtura::inject]` is the async counterpart to `#[fixtura::test]`. It handles arg injection but does not emit `#[test]` — the outer test attribute does that.
+
+Place the runner above `#[fixtura::inject]`:
+
+```rust
+#[tokio::test]      // runs the async runtime
+#[fixtura::inject]  // injects fake args
+async fn my_test(user: User) { ... }
+```
+
+Everything works the same: `#[with(...)]`, cross-references, `#[should_panic]`.
+
+Add tokio to your dev-dependencies to use it:
+
+```toml
+tokio = { version = "1", features = ["rt", "macros"] }
+```
 
 ---
 
 ## Status
 
-Early development — v0.3 available. Seeded randomness and async support are coming. Feedback welcome — open an issue or start a discussion.
+Early development — v0.4 available. Seeded randomness is coming. Feedback welcome — open an issue or start a discussion.
