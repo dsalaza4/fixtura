@@ -42,52 +42,21 @@ fn check_forward_refs(args: &[Arg]) -> syn::Result<()> {
 }
 
 pub fn expand(input: ItemFn) -> TokenStream {
-    let ItemFn {
-        attrs,
-        vis,
-        sig,
-        block,
-    } = input;
-
-    if let Some(async_token) = &sig.asyncness {
+    if let Some(async_token) = &input.sig.asyncness {
         return syn::Error::new_spanned(
             async_token,
             "async functions are not supported by `#[fixtura::test]` — use `#[tokio::test]` above `#[fixtura::inject]` instead",
         )
         .to_compile_error();
     }
-
-    let args = match parse_args(&sig.inputs) {
-        Ok(args) => args,
-        Err(e) => return e.to_compile_error(),
-    };
-
-    if let Err(e) = check_forward_refs(&args) {
-        return e.to_compile_error();
-    }
-
-    let bindings = args.iter().map(binding);
-
-    // Filter out #[test] to avoid duplicating it — we always emit our own.
-    let attrs = attrs.iter().filter(|a| !a.path().is_ident("test"));
-    let sig = Signature {
-        inputs: Default::default(),
-        ..sig
-    };
-    let stmts = &block.stmts;
-
-    quote! {
-        #[test]
-        #(#attrs)*
-        #vis #sig {
-            use ::fake::Fake;
-            #(#bindings)*
-            #(#stmts)*
-        }
-    }
+    expand_inner(input, Some(quote! { #[test] }))
 }
 
 pub fn expand_inject(input: ItemFn) -> TokenStream {
+    expand_inner(input, None)
+}
+
+fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>) -> TokenStream {
     let ItemFn {
         attrs,
         vis,
@@ -105,6 +74,10 @@ pub fn expand_inject(input: ItemFn) -> TokenStream {
     }
 
     let bindings = args.iter().map(binding);
+    // When emitting our own #[test], filter it from attrs to avoid duplication.
+    let attrs = attrs
+        .into_iter()
+        .filter(|a| test_attr.is_none() || !a.path().is_ident("test"));
     let sig = Signature {
         inputs: Default::default(),
         ..sig
@@ -112,6 +85,7 @@ pub fn expand_inject(input: ItemFn) -> TokenStream {
     let stmts = &block.stmts;
 
     quote! {
+        #test_attr
         #(#attrs)*
         #vis #sig {
             use ::fake::Fake;

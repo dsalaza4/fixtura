@@ -16,8 +16,6 @@ struct Order {
     status: String,
 }
 
-// --- Async business logic under test ---
-
 async fn find_user(id: u32) -> Option<User> {
     if id == 0 {
         None
@@ -37,8 +35,6 @@ async fn submit_order(order: &Order) -> Result<u32, &'static str> {
 async fn activate_user(user: &mut User) {
     user.active = true;
 }
-
-// --- Tests ---
 
 #[tokio::test]
 #[fixtura::inject]
