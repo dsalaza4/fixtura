@@ -36,6 +36,20 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo test
 
+  deny:
+    name: Deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+
+  semver:
+    name: Semver
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: obi1kenobi/cargo-semver-checks-action@v2
+
   commitlint:
     name: Commit lint
     runs-on: ubuntu-latest
