@@ -22,10 +22,14 @@ Every test that needs fake data looks like this:
 
 ```rust
 #[test]
-fn user_label_format() {
+fn order_belongs_to_user() {
     let user: User = Faker.fake();
-    assert!(label(&user).contains(&user.name));
-    assert!(label(&user).contains(&user.email));
+    let mut order: Order = Faker.fake();
+    order.user_id = user.id;
+    order.status = "pending".to_string();
+
+    assert!(is_billable(&order));
+    assert_eq!(order.user_id, user.id);
 }
 ```
 
@@ -37,21 +41,36 @@ Multiply this across a test suite and you get walls of setup that obscure what t
 
 ```rust
 #[fixtura::test]
-fn user_label_format(user: User) {
-    assert!(label(&user).contains(&user.name));
-    assert!(label(&user).contains(&user.email));
+fn order_belongs_to_user(
+    user: User,
+    #[with(user_id = user.id, status = "pending".to_string())]
+    order: Order,
+) {
+    assert!(is_billable(&order));
+    assert_eq!(order.user_id, user.id);
 }
 ```
 
-Fixtura injects a fake value for every argument. The only requirement is `#[derive(Dummy)]` on your types — no custom traits, no registration, no boilerplate.
+`#[fixtura::test]` injects a fake value for every argument. Use `#[with(...)]` to pin the fields your test cares about — everything else is randomized.
+
+The only requirement is `#[derive(Dummy)]` on your types.
 
 ```rust
 use fake::Dummy;
 
 #[derive(Dummy)]
 struct User {
+    id: u32,
     name: String,
-    email: String,
+    active: bool,
+}
+
+#[derive(Dummy)]
+struct Order {
+    id: u32,
+    user_id: u32,
+    status: String,
+    total: f64,
 }
 ```
 
@@ -59,22 +78,36 @@ struct User {
 
 ## What you get
 
-**Declarative.** The test signature is the setup.
+**Declarative.** The test signature is the setup. No boilerplate, no helper functions, no builder chains.
 
-**Simple.** Works with any type that derives `Dummy`. No configuration required.
-
-**Compatible.** `#[fixtura::test]` composes with `#[should_panic]` and any other test attribute.
+**Precise.** Pin exactly the fields your test depends on. Fixtura fakes the rest.
 
 ```rust
 #[fixtura::test]
-#[should_panic(expected = "inactive")]
-fn inactive_user_panics(user: User) {
-    process(&user).unwrap();
+fn inactive_users_cannot_checkout(
+    #[with(active = false)] user: User,
+    order: Order,
+) {
+    assert!(checkout(&user, &order).is_err());
 }
 ```
+
+**Relational.** Reference earlier arguments in overrides to keep related objects coherent.
+
+```rust
+#[fixtura::test]
+fn order_belongs_to_user(
+    user: User,
+    #[with(user_id = user.id)] order: Order,
+) {
+    assert_eq!(order.user_id, user.id);
+}
+```
+
+**Compatible.** Composes with `#[should_panic]` and any other test attribute.
 
 ---
 
 ## Status
 
-Early development — v0.1 is available. Field overrides, seeded randomness, and async support are coming. Feedback welcome — open an issue or start a discussion.
+Early development — v0.1 available. Seeded randomness and async support are coming. Feedback welcome — open an issue or start a discussion.
