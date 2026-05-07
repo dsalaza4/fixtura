@@ -1,0 +1,3 @@
+[workspace]
+members = ["fixtura", "fixtura-macros"]
+resolver = "2"

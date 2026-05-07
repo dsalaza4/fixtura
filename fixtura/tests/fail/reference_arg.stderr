@@ -1,0 +1,11 @@
+error: #[fixtura::test] does not support reference arguments — use the owned type
+ --> tests/fail/reference_arg.rs:9:15
+  |
+9 | fn test(user: &User) {}
+  |               ^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+ --> tests/fail/reference_arg.rs:9:24
+  |
+9 | fn test(user: &User) {}
+  |                        ^ consider adding a `main` function to `$DIR/tests/fail/reference_arg.rs`

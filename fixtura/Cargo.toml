@@ -1,0 +1,11 @@
+[package]
+name = "fixtura"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fixtura-macros = { path = "../fixtura-macros" }
+
+[dev-dependencies]
+fake = { version = "5", features = ["derive"] }
+trybuild = "1"

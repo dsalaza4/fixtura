@@ -1,0 +1,11 @@
+error: #[fixtura::test] does not support `self`
+ --> tests/fail/self_arg.rs:5:13
+  |
+5 |     fn test(self) {}
+  |             ^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+ --> tests/fail/self_arg.rs:6:2
+  |
+6 | }
+  |  ^ consider adding a `main` function to `$DIR/tests/fail/self_arg.rs`
