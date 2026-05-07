@@ -110,4 +110,4 @@ fn order_belongs_to_user(
 
 ## Status
 
-Early development — v0.1 available. Seeded randomness and async support are coming. Feedback welcome — open an issue or start a discussion.
+Early development — v0.2 available. Seeded randomness and async support are coming. Feedback welcome — open an issue or start a discussion.
