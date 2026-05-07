@@ -73,7 +73,11 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>
         return e.to_compile_error();
     }
 
-    let rng_preamble = rng_preamble(seed, args.is_empty());
+    let rng_preamble = if args.is_empty() {
+        quote! {}
+    } else {
+        rng_preamble(seed)
+    };
     let bindings = args.iter().map(binding);
     // When emitting our own #[test], filter it from attrs to avoid duplication.
     let attrs = attrs
@@ -97,10 +101,7 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>
     }
 }
 
-fn rng_preamble(seed: Option<u64>, no_args: bool) -> TokenStream {
-    if no_args {
-        return quote! {};
-    }
+fn rng_preamble(seed: Option<u64>) -> TokenStream {
     let seed_expr = match seed {
         Some(n) => {
             let lit = Literal::u64_suffixed(n);
