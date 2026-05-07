@@ -1,6 +1,6 @@
 [package]
 name = "fixtura-macros"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 description = "Proc-macro internals for fixtura — do not depend on this crate directly"
 license = "MIT"

@@ -10,7 +10,7 @@ Built on [`fake-rs`](https://github.com/cksac/fake-rs).
 
 ```toml
 [dev-dependencies]
-fixtura = "0.5.0"
+fixtura = "0.6.0"
 fake = { version = "5", features = ["derive"] }
 ```
 
@@ -156,7 +156,7 @@ Works identically with `#[fixtura::inject]`:
 ```rust
 #[tokio::test]
 #[fixtura::inject(seed = 42)]
-async fn my_test(user: User) { ... }
+async fn my_test(#[fixtura] user: User) { ... }
 ```
 
 ---
@@ -170,10 +170,10 @@ Place the runner above `#[fixtura::inject]`:
 ```rust
 #[tokio::test]      // runs the async runtime
 #[fixtura::inject]  // injects fake args
-async fn my_test(user: User) { ... }
+async fn my_test(#[fixtura] user: User) { ... }
 ```
 
-Everything works the same: `#[fixtura(...)]`, cross-references, `#[should_panic]`.
+Mark each arg fixtura should own with `#[fixtura]` or `#[fixtura(...)]`. Everything works the same: field overrides, cross-references, `#[should_panic]`.
 
 Add tokio to your dev-dependencies to use it:
 
@@ -183,6 +183,25 @@ tokio = { version = "1", features = ["rt", "macros"] }
 
 ---
 
+## Framework passthrough
+
+When combining fixtura with another injecting framework (e.g. `sqlx::test`), mark only the args fixtura should own. Unmarked args stay in the signature for the other framework to inject.
+
+```rust
+#[sqlx::test]
+#[fixtura::inject]
+async fn saves_to_db(
+    pool: PgPool,                                   // sqlx owns — untouched
+    #[fixtura] user: User,                          // fixtura owns
+    #[fixtura(user_id = user.id)] order: Order,     // fixtura owns, with override
+) {
+    db::save_order(&pool, &user, &order).await.unwrap();
+}
+
+```
+
+---
+
 ## Status
 
-Early development — v0.5 available. Feedback welcome — open an issue or start a discussion.
+Early development — v0.6 available. Feedback welcome — open an issue or start a discussion.
