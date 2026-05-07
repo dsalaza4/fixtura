@@ -93,3 +93,30 @@ async fn cross_reference_preserved_across_await(
 async fn should_panic_preserved_in_async(#[fixtura] _user: User) {
     unimplemented!()
 }
+
+// Helper for runtime pass-through tests — not a test itself.
+#[fixtura::inject]
+async fn inject_with_caller_value(caller_value: u32, #[fixtura] _user: User) -> u32 {
+    caller_value
+}
+
+#[fixtura::inject]
+async fn inject_with_passthrough_in_override(
+    caller_id: u32,
+    #[fixtura(user_id = caller_id)] order: Order,
+) -> u32 {
+    order.user_id
+}
+
+// Pass-through arg is provided by the caller at runtime and arrives unchanged.
+#[tokio::test]
+async fn passthrough_arg_received_from_caller() {
+    assert_eq!(inject_with_caller_value(99).await, 99);
+    assert_eq!(inject_with_caller_value(0).await, 0);
+}
+
+// A pass-through ident used in #[fixtura(...)] overrides resolves correctly.
+#[tokio::test]
+async fn passthrough_ref_usable_in_fixtura_override() {
+    assert_eq!(inject_with_passthrough_in_override(42).await, 42);
+}
