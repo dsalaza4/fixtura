@@ -20,7 +20,11 @@ async fn find_user(id: u32) -> Option<User> {
     if id == 0 {
         None
     } else {
-        Some(User { id, name: "stub".into(), active: true })
+        Some(User {
+            id,
+            name: "stub".into(),
+            active: true,
+        })
     }
 }
 
@@ -60,9 +64,7 @@ async fn submit_order_succeeds_with_nonempty_status(
 
 #[tokio::test]
 #[fixtura::inject]
-async fn submit_order_fails_with_empty_status(
-    #[with(status = String::new())] order: Order,
-) {
+async fn submit_order_fails_with_empty_status(#[with(status = String::new())] order: Order) {
     assert!(submit_order(&order).await.is_err());
 }
 
