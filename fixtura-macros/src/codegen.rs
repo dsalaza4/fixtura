@@ -1,11 +1,18 @@
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
-use syn::ItemFn;
+use syn::{ItemFn, Signature};
 
 use crate::parser::parse_args;
 
 pub fn expand(input: ItemFn) -> TokenStream {
-    let args = match parse_args(&input.sig.inputs) {
+    let ItemFn {
+        attrs,
+        vis,
+        sig,
+        block,
+    } = input;
+
+    let args = match parse_args(&sig.inputs) {
         Ok(args) => args,
         Err(e) => return e.to_compile_error(),
     };
@@ -19,15 +26,12 @@ pub fn expand(input: ItemFn) -> TokenStream {
     });
 
     // Filter out #[test] to avoid duplicating it — we always emit our own.
-    let attrs = input
-        .attrs
-        .iter()
-        .filter(|a| !a.path().is_ident("test"));
-
-    let vis = &input.vis;
-    let mut sig = input.sig.clone();
-    sig.inputs.clear();
-    let stmts = &input.block.stmts;
+    let attrs = attrs.iter().filter(|a| !a.path().is_ident("test"));
+    let sig = Signature {
+        inputs: Default::default(),
+        ..sig
+    };
+    let stmts = &block.stmts;
 
     quote! {
         #[test]
