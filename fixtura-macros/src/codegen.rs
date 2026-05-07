@@ -5,7 +5,12 @@ use syn::{ItemFn, Signature};
 use crate::parser::{parse_args, Arg};
 
 pub fn expand(input: ItemFn) -> TokenStream {
-    let ItemFn { attrs, vis, sig, block } = input;
+    let ItemFn {
+        attrs,
+        vis,
+        sig,
+        block,
+    } = input;
 
     let args = match parse_args(&sig.inputs) {
         Ok(args) => args,
@@ -16,7 +21,10 @@ pub fn expand(input: ItemFn) -> TokenStream {
 
     // Filter out #[test] to avoid duplicating it — we always emit our own.
     let attrs = attrs.iter().filter(|a| !a.path().is_ident("test"));
-    let sig = Signature { inputs: Default::default(), ..sig };
+    let sig = Signature {
+        inputs: Default::default(),
+        ..sig
+    };
     let stmts = &block.stmts;
 
     quote! {

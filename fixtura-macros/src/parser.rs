@@ -1,7 +1,5 @@
 use proc_macro2::Span;
-use syn::{
-    parse::ParseStream, punctuated::Punctuated, Expr, FnArg, Ident, Token, Type,
-};
+use syn::{parse::ParseStream, punctuated::Punctuated, Expr, FnArg, Ident, Token, Type};
 
 pub struct FieldOverride {
     pub path: Vec<Ident>,
@@ -16,9 +14,7 @@ pub struct Arg {
     pub overrides: Vec<FieldOverride>,
 }
 
-pub fn parse_args(
-    inputs: &Punctuated<FnArg, Token![,]>,
-) -> syn::Result<Vec<Arg>> {
+pub fn parse_args(inputs: &Punctuated<FnArg, Token![,]>) -> syn::Result<Vec<Arg>> {
     inputs.iter().map(parse_one).collect()
 }
 
@@ -56,24 +52,25 @@ fn parse_one(arg: &FnArg) -> syn::Result<Arg> {
     let mut overrides = Vec::new();
     for attr in &pat_type.attrs {
         if attr.path().is_ident("with") {
-            let mut fields = attr.parse_args_with(parse_with_args)?;
-            overrides.append(&mut fields);
+            overrides.extend(attr.parse_args_with(parse_with_args)?);
         }
     }
 
-    Ok(Arg { ident, ty, span, overrides })
+    Ok(Arg {
+        ident,
+        ty,
+        span,
+        overrides,
+    })
 }
 
 fn parse_with_args(input: ParseStream) -> syn::Result<Vec<FieldOverride>> {
     if input.is_empty() {
-        return Err(input.error(
-            "#[with] requires at least one field override, e.g. #[with(active = false)]",
-        ));
+        return Err(input
+            .error("#[with] requires at least one field override, e.g. #[with(active = false)]"));
     }
-    let fields = Punctuated::<FieldOverride, Token![,]>::parse_terminated_with(
-        input,
-        parse_field_override,
-    )?;
+    let fields =
+        Punctuated::<FieldOverride, Token![,]>::parse_terminated_with(input, parse_field_override)?;
     Ok(fields.into_iter().collect())
 }
 
@@ -83,11 +80,11 @@ fn parse_field_override(input: ParseStream) -> syn::Result<FieldOverride> {
     let mut path = vec![first];
 
     while input.peek(Token![.]) {
-        let _: Token![.] = input.parse()?;
+        input.parse::<Token![.]>()?;
         path.push(input.parse()?);
     }
 
-    let _: Token![=] = input.parse()?;
+    input.parse::<Token![=]>()?;
     let expr: Expr = input.parse()?;
 
     Ok(FieldOverride { path, expr, span })
