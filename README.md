@@ -6,6 +6,16 @@ Built on [`fake-rs`](https://github.com/cksac/fake-rs). Compatible with `#[tokio
 
 ---
 
+## Install
+
+```toml
+[dev-dependencies]
+fixtura = "0.1"
+fake = { version = "5", features = ["derive"] }
+```
+
+---
+
 ## The problem
 
 Every test that needs fake data looks like this:
