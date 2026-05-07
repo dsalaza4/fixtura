@@ -1,0 +1,11 @@
+error: `user` cannot reference itself in `#[with]`
+ --> tests/fail/self_ref.rs:9:25
+  |
+9 | fn self_ref(#[with(id = user.id)] user: User) {
+  |                         ^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/self_ref.rs:11:2
+   |
+11 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/self_ref.rs`

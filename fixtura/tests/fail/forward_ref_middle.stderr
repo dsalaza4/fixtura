@@ -1,0 +1,11 @@
+error: `product` is not yet in scope — `#[with]` expressions are evaluated top-to-bottom
+  --> tests/fail/forward_ref_middle.rs:21:23
+   |
+21 |     #[with(order_id = product.order_id)] order: Order,
+   |                       ^^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/forward_ref_middle.rs:25:2
+   |
+25 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/forward_ref_middle.rs`

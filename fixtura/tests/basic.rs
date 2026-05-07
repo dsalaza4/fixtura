@@ -28,6 +28,13 @@ struct Order {
     quantity: u32,
 }
 
+#[derive(Dummy, Debug)]
+struct LineItem {
+    id: u32,
+    order_id: u32,
+    user_id: u32,
+}
+
 // --- Business logic under test ---
 
 fn display_name(user: &User) -> String {
@@ -137,4 +144,45 @@ fn mix_of_plain_and_overridden_args(
 #[fixtura::test]
 fn override_and_cross_reference(user: User, #[with(user_id = user.id)] order: Order) {
     assert_eq!(order.user_id, user.id);
+}
+
+#[fixtura::test]
+fn chained_cross_reference(
+    user: User,
+    #[with(user_id = user.id)] order: Order,
+    #[with(user_id = user.id, order_id = order.id)] line_item: LineItem,
+) {
+    assert_eq!(order.user_id, user.id);
+    assert_eq!(line_item.user_id, user.id);
+    assert_eq!(line_item.order_id, order.id);
+}
+
+// prior arg referenced multiple times within the same #[with]
+#[fixtura::test]
+fn cross_reference_same_prior_arg_twice(
+    user: User,
+    #[with(user_id = user.id, order_id = user.id)] line_item: LineItem,
+) {
+    assert_eq!(line_item.user_id, user.id);
+    assert_eq!(line_item.order_id, user.id);
+}
+
+// expression using a prior arg, not just a plain field access
+#[fixtura::test]
+fn cross_reference_with_expression(
+    order: Order,
+    #[with(quantity = order.quantity.saturating_add(0))] order2: Order,
+) {
+    assert_eq!(order2.quantity, order.quantity);
+}
+
+// plain arg between two with-override args
+#[fixtura::test]
+fn plain_arg_between_override_args(
+    user: User,
+    product: Product,
+    #[with(user_id = user.id, product_id = product.id)] order: Order,
+) {
+    assert_eq!(order.user_id, user.id);
+    assert_eq!(order.product_id, product.id);
 }
