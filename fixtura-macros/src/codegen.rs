@@ -49,6 +49,14 @@ pub fn expand(input: ItemFn) -> TokenStream {
         block,
     } = input;
 
+    if let Some(async_token) = &sig.asyncness {
+        return syn::Error::new_spanned(
+            async_token,
+            "async functions are not supported by `#[fixtura::test]` — use `#[tokio::test]` above `#[fixtura::inject]` instead",
+        )
+        .to_compile_error();
+    }
+
     let args = match parse_args(&sig.inputs) {
         Ok(args) => args,
         Err(e) => return e.to_compile_error(),
@@ -70,6 +78,40 @@ pub fn expand(input: ItemFn) -> TokenStream {
 
     quote! {
         #[test]
+        #(#attrs)*
+        #vis #sig {
+            use ::fake::Fake;
+            #(#bindings)*
+            #(#stmts)*
+        }
+    }
+}
+
+pub fn expand_inject(input: ItemFn) -> TokenStream {
+    let ItemFn {
+        attrs,
+        vis,
+        sig,
+        block,
+    } = input;
+
+    let args = match parse_args(&sig.inputs) {
+        Ok(args) => args,
+        Err(e) => return e.to_compile_error(),
+    };
+
+    if let Err(e) = check_forward_refs(&args) {
+        return e.to_compile_error();
+    }
+
+    let bindings = args.iter().map(binding);
+    let sig = Signature {
+        inputs: Default::default(),
+        ..sig
+    };
+    let stmts = &block.stmts;
+
+    quote! {
         #(#attrs)*
         #vis #sig {
             use ::fake::Fake;

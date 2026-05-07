@@ -1,0 +1,11 @@
+error: async functions are not supported by `#[fixtura::test]` — use `#[tokio::test]` above `#[fixtura::inject]` instead
+ --> tests/fail/async_with_test.rs:9:1
+  |
+9 | async fn async_test(user: User) {
+  | ^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/async_with_test.rs:11:2
+   |
+11 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/async_with_test.rs`
