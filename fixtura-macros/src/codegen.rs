@@ -1,6 +1,6 @@
 use proc_macro2::{Literal, TokenStream};
 use quote::{quote, quote_spanned};
-use syn::{visit::Visit, Ident, ItemFn, Signature};
+use syn::{visit::Visit, FnArg, Ident, ItemFn, Signature};
 
 use crate::parser::{parse_args, Arg};
 
@@ -17,8 +17,8 @@ impl<'ast> Visit<'ast> for PathRoots {
     }
 }
 
-fn check_forward_refs(args: &[Arg]) -> syn::Result<()> {
-    for (i, arg) in args.iter().enumerate() {
+fn check_forward_refs(owned: &[&Arg]) -> syn::Result<()> {
+    for (i, arg) in owned.iter().enumerate() {
         for ov in &arg.overrides {
             let mut roots = PathRoots(vec![]);
             roots.visit_expr(&ov.expr);
@@ -29,7 +29,7 @@ fn check_forward_refs(args: &[Arg]) -> syn::Result<()> {
                         format!("`{used}` cannot reference itself in `#[fixtura]`"),
                     ));
                 }
-                if args[i + 1..].iter().any(|a| a.ident == used) {
+                if owned[i + 1..].iter().any(|a| a.ident == used) {
                     return Err(syn::Error::new(
                         used.span(),
                         format!("`{used}` is not yet in scope — `#[fixtura]` expressions are evaluated top-to-bottom"),
@@ -57,6 +57,8 @@ pub fn expand_inject(input: ItemFn, seed: Option<u64>) -> TokenStream {
 }
 
 fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>) -> TokenStream {
+    let is_inject = test_attr.is_none();
+
     let ItemFn {
         attrs,
         vis,
@@ -64,27 +66,32 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>
         block,
     } = input;
 
-    let args = match parse_args(&sig.inputs) {
+    let args = match parse_args(&sig.inputs, is_inject) {
         Ok(args) => args,
         Err(e) => return e.to_compile_error(),
     };
 
-    if let Err(e) = check_forward_refs(&args) {
+    let owned: Vec<&Arg> = args.iter().filter(|a| a.owned).collect();
+    let passthrough: Vec<&FnArg> = args.iter().filter(|a| !a.owned).map(|a| &a.fn_arg).collect();
+
+    if let Err(e) = check_forward_refs(&owned) {
         return e.to_compile_error();
     }
 
-    let rng_preamble = if args.is_empty() {
+    let rng_preamble = if owned.is_empty() {
         quote! {}
     } else {
         rng_preamble(seed)
     };
-    let bindings = args.iter().map(binding);
+    let bindings = owned.iter().map(|a| binding(a));
     // When emitting our own #[test], filter it from attrs to avoid duplication.
     let attrs = attrs
         .into_iter()
         .filter(|a| test_attr.is_none() || !a.path().is_ident("test"));
+    let passthrough_inputs: syn::punctuated::Punctuated<FnArg, syn::token::Comma> =
+        passthrough.into_iter().cloned().collect();
     let sig = Signature {
-        inputs: Default::default(),
+        inputs: passthrough_inputs,
         ..sig
     };
     let stmts = &block.stmts;

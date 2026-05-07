@@ -34,7 +34,7 @@ fn seeded_test_matches_manual_rng(user: User) {
 
 #[tokio::test]
 #[fixtura::inject(seed = 99)]
-async fn seeded_inject_matches_manual_rng(user: User) {
+async fn seeded_inject_matches_manual_rng(#[fixtura] user: User) {
     assert_eq!(user, user_with_seed(99));
 }
 

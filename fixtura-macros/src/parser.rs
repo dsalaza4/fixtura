@@ -36,13 +36,17 @@ pub struct Arg {
     pub ty: Type,
     pub span: Span,
     pub overrides: Vec<FieldOverride>,
+    /// false only for inject pass-through args (no `#[fixtura]` marker)
+    pub owned: bool,
+    /// original FnArg, used to re-emit pass-through args into the signature
+    pub fn_arg: FnArg,
 }
 
-pub fn parse_args(inputs: &Punctuated<FnArg, Token![,]>) -> syn::Result<Vec<Arg>> {
-    inputs.iter().map(parse_one).collect()
+pub fn parse_args(inputs: &Punctuated<FnArg, Token![,]>, is_inject: bool) -> syn::Result<Vec<Arg>> {
+    inputs.iter().map(|arg| parse_one(arg, is_inject)).collect()
 }
 
-fn parse_one(arg: &FnArg) -> syn::Result<Arg> {
+fn parse_one(arg: &FnArg, is_inject: bool) -> syn::Result<Arg> {
     let pat_type = match arg {
         FnArg::Receiver(r) => {
             return Err(syn::Error::new_spanned(
@@ -52,6 +56,32 @@ fn parse_one(arg: &FnArg) -> syn::Result<Arg> {
         }
         FnArg::Typed(pt) => pt,
     };
+
+    let fixtura_attr = pat_type
+        .attrs
+        .iter()
+        .find(|a| a.path().is_ident("fixtura"));
+
+    // In inject mode, args without #[fixtura] are pass-throughs — skip all validation.
+    if is_inject && fixtura_attr.is_none() {
+        let ident = match &*pat_type.pat {
+            syn::Pat::Ident(p) => p.ident.clone(),
+            _ => {
+                return Err(syn::Error::new_spanned(
+                    &pat_type.pat,
+                    "#[fixtura::inject] only supports simple patterns like `pool: PgPool`",
+                ))
+            }
+        };
+        return Ok(Arg {
+            span: ident.span(),
+            ty: (*pat_type.ty).clone(),
+            ident,
+            overrides: vec![],
+            owned: false,
+            fn_arg: arg.clone(),
+        });
+    }
 
     if let Type::Reference(r) = &*pat_type.ty {
         return Err(syn::Error::new_spanned(
@@ -74,9 +104,27 @@ fn parse_one(arg: &FnArg) -> syn::Result<Arg> {
     let ty = (*pat_type.ty).clone();
 
     let mut overrides = Vec::new();
-    for attr in &pat_type.attrs {
-        if attr.path().is_ident("fixtura") {
-            overrides.extend(attr.parse_args_with(parse_fixtura_args)?);
+    if let Some(attr) = fixtura_attr {
+        match &attr.meta {
+            syn::Meta::Path(_) => {
+                // #[fixtura] with no args
+                if !is_inject {
+                    return Err(syn::Error::new_spanned(
+                        attr,
+                        "in `#[fixtura::test]`, all args are owned by default — `#[fixtura]` is not needed here",
+                    ));
+                }
+                // owned, no overrides
+            }
+            syn::Meta::List(_) => {
+                overrides.extend(attr.parse_args_with(parse_fixtura_args)?);
+            }
+            syn::Meta::NameValue(nv) => {
+                return Err(syn::Error::new_spanned(
+                    nv,
+                    "expected `#[fixtura]` or `#[fixtura(field = value, ...)]`",
+                ));
+            }
         }
     }
 
@@ -85,6 +133,8 @@ fn parse_one(arg: &FnArg) -> syn::Result<Arg> {
         ty,
         span,
         overrides,
+        owned: true,
+        fn_arg: arg.clone(),
     })
 }
 

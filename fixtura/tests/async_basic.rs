@@ -42,13 +42,13 @@ async fn activate_user(user: &mut User) {
 
 #[tokio::test]
 #[fixtura::inject]
-async fn find_user_returns_none_for_zero_id(_user: User) {
+async fn find_user_returns_none_for_zero_id(#[fixtura] _user: User) {
     assert!(find_user(0).await.is_none());
 }
 
 #[tokio::test]
 #[fixtura::inject]
-async fn find_user_returns_user_for_nonzero_id(user: User) {
+async fn find_user_returns_user_for_nonzero_id(#[fixtura] user: User) {
     let found = find_user(user.id.max(1)).await;
     assert!(found.is_some());
 }
@@ -79,7 +79,7 @@ async fn activate_user_sets_active_true(#[fixtura(active = false)] user: User) {
 #[tokio::test]
 #[fixtura::inject]
 async fn cross_reference_preserved_across_await(
-    user: User,
+    #[fixtura] user: User,
     #[fixtura(user_id = user.id)] order: Order,
 ) {
     let found = find_user(user.id.max(1)).await;
@@ -90,6 +90,6 @@ async fn cross_reference_preserved_across_await(
 #[tokio::test]
 #[fixtura::inject]
 #[should_panic(expected = "not implemented")]
-async fn should_panic_preserved_in_async(_user: User) {
+async fn should_panic_preserved_in_async(#[fixtura] _user: User) {
     unimplemented!()
 }

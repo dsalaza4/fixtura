@@ -1,0 +1,11 @@
+error: in `#[fixtura::test]`, all args are owned by default — `#[fixtura]` is not needed here
+ --> tests/fail/fixtura_no_args_in_test.rs:9:9
+  |
+9 | fn test(#[fixtura] user: User) {
+  |         ^^^^^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/fixtura_no_args_in_test.rs:11:2
+   |
+11 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/fixtura_no_args_in_test.rs`
