@@ -72,7 +72,11 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>
     };
 
     let owned: Vec<&Arg> = args.iter().filter(|a| a.owned).collect();
-    let passthrough: Vec<&FnArg> = args.iter().filter(|a| !a.owned).map(|a| &a.fn_arg).collect();
+    let passthrough: Vec<&FnArg> = args
+        .iter()
+        .filter(|a| !a.owned)
+        .map(|a| &a.fn_arg)
+        .collect();
 
     if let Err(e) = check_forward_refs(&owned) {
         return e.to_compile_error();

@@ -57,10 +57,7 @@ fn parse_one(arg: &FnArg, is_inject: bool) -> syn::Result<Arg> {
         FnArg::Typed(pt) => pt,
     };
 
-    let fixtura_attr = pat_type
-        .attrs
-        .iter()
-        .find(|a| a.path().is_ident("fixtura"));
+    let fixtura_attr = pat_type.attrs.iter().find(|a| a.path().is_ident("fixtura"));
 
     // In inject mode, args without #[fixtura] are pass-throughs — skip all validation.
     if is_inject && fixtura_attr.is_none() {
