@@ -1,8 +1,8 @@
-error: `user` cannot reference itself in `#[with]`
- --> tests/fail/self_ref.rs:9:25
+error: `user` cannot reference itself in `#[fixtura]`
+ --> tests/fail/self_ref.rs:9:28
   |
-9 | fn self_ref(#[with(id = user.id)] user: User) {
-  |                         ^^^^
+9 | fn self_ref(#[fixtura(id = user.id)] user: User) {
+  |                            ^^^^
 
 error[E0601]: `main` function not found in crate `$CRATE`
   --> tests/fail/self_ref.rs:11:2

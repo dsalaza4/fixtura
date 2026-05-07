@@ -18,7 +18,7 @@ struct Product {
 #[fixtura::test]
 fn forward_ref_middle(
     user: User,
-    #[with(order_id = product.order_id)] order: Order,
+    #[fixtura(order_id = product.order_id)] order: Order,
     product: Product,
 ) {
     let _ = (user, order, product);

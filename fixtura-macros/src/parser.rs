@@ -75,8 +75,8 @@ fn parse_one(arg: &FnArg) -> syn::Result<Arg> {
 
     let mut overrides = Vec::new();
     for attr in &pat_type.attrs {
-        if attr.path().is_ident("with") {
-            overrides.extend(attr.parse_args_with(parse_with_args)?);
+        if attr.path().is_ident("fixtura") {
+            overrides.extend(attr.parse_args_with(parse_fixtura_args)?);
         }
     }
 
@@ -88,10 +88,11 @@ fn parse_one(arg: &FnArg) -> syn::Result<Arg> {
     })
 }
 
-fn parse_with_args(input: ParseStream) -> syn::Result<Vec<FieldOverride>> {
+fn parse_fixtura_args(input: ParseStream) -> syn::Result<Vec<FieldOverride>> {
     if input.is_empty() {
-        return Err(input
-            .error("#[with] requires at least one field override, e.g. #[with(active = false)]"));
+        return Err(input.error(
+            "#[fixtura(...)] requires at least one field override, e.g. #[fixtura(active = false)]",
+        ));
     }
     let fields =
         Punctuated::<FieldOverride, Token![,]>::parse_terminated_with(input, parse_field_override)?;

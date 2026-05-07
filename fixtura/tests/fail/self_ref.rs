@@ -6,6 +6,6 @@ struct User {
 }
 
 #[fixtura::test]
-fn self_ref(#[with(id = user.id)] user: User) {
+fn self_ref(#[fixtura(id = user.id)] user: User) {
     let _ = user;
 }

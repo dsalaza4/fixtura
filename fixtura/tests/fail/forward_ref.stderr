@@ -1,8 +1,8 @@
-error: `order` is not yet in scope — `#[with]` expressions are evaluated top-to-bottom
-  --> tests/fail/forward_ref.rs:15:22
+error: `order` is not yet in scope — `#[fixtura]` expressions are evaluated top-to-bottom
+  --> tests/fail/forward_ref.rs:15:25
    |
-15 |     #[with(user_id = order.user_id)] user: User,
-   |                      ^^^^^
+15 |     #[fixtura(user_id = order.user_id)] user: User,
+   |                         ^^^^^
 
 error[E0601]: `main` function not found in crate `$CRATE`
   --> tests/fail/forward_ref.rs:19:2

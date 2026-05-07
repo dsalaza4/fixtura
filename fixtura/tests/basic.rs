@@ -113,28 +113,28 @@ fn preserves_should_panic(user: User) {
     unimplemented!()
 }
 
-// --- #[with(...)] override tests ---
+// --- #[fixtura(...)] override tests ---
 
 #[fixtura::test]
-fn override_single_field(#[with(active = false)] user: User) {
+fn override_single_field(#[fixtura(active = false)] user: User) {
     assert!(!user.active);
 }
 
 #[fixtura::test]
-fn override_multiple_fields(#[with(price_cents = 500u32, in_stock = true)] product: Product) {
+fn override_multiple_fields(#[fixtura(price_cents = 500u32, in_stock = true)] product: Product) {
     assert_eq!(product.price_cents, 500);
     assert!(product.in_stock);
 }
 
 #[fixtura::test]
-fn override_does_not_affect_other_fields(#[with(active = true)] user: User) {
+fn override_does_not_affect_other_fields(#[fixtura(active = true)] user: User) {
     assert!(user.active);
 }
 
 #[fixtura::test]
 fn mix_of_plain_and_overridden_args(
     user: User,
-    #[with(quantity = 0u32)] order: Order,
+    #[fixtura(quantity = 0u32)] order: Order,
     product: Product,
 ) {
     assert_eq!(subtotal_cents(&order, &product), 0);
@@ -142,15 +142,15 @@ fn mix_of_plain_and_overridden_args(
 }
 
 #[fixtura::test]
-fn override_and_cross_reference(user: User, #[with(user_id = user.id)] order: Order) {
+fn override_and_cross_reference(user: User, #[fixtura(user_id = user.id)] order: Order) {
     assert_eq!(order.user_id, user.id);
 }
 
 #[fixtura::test]
 fn chained_cross_reference(
     user: User,
-    #[with(user_id = user.id)] order: Order,
-    #[with(user_id = user.id, order_id = order.id)] line_item: LineItem,
+    #[fixtura(user_id = user.id)] order: Order,
+    #[fixtura(user_id = user.id, order_id = order.id)] line_item: LineItem,
 ) {
     assert_eq!(order.user_id, user.id);
     assert_eq!(line_item.user_id, user.id);
@@ -160,7 +160,7 @@ fn chained_cross_reference(
 #[fixtura::test]
 fn cross_reference_same_prior_arg_twice(
     user: User,
-    #[with(user_id = user.id, order_id = user.id)] line_item: LineItem,
+    #[fixtura(user_id = user.id, order_id = user.id)] line_item: LineItem,
 ) {
     assert_eq!(line_item.user_id, user.id);
     assert_eq!(line_item.order_id, user.id);
@@ -169,7 +169,7 @@ fn cross_reference_same_prior_arg_twice(
 #[fixtura::test]
 fn cross_reference_with_expression(
     order: Order,
-    #[with(quantity = order.quantity.saturating_add(1))] order2: Order,
+    #[fixtura(quantity = order.quantity.saturating_add(1))] order2: Order,
 ) {
     assert_eq!(order2.quantity, order.quantity.saturating_add(1));
 }
@@ -178,7 +178,7 @@ fn cross_reference_with_expression(
 fn plain_arg_between_override_args(
     user: User,
     product: Product,
-    #[with(user_id = user.id, product_id = product.id)] order: Order,
+    #[fixtura(user_id = user.id, product_id = product.id)] order: Order,
 ) {
     assert_eq!(order.user_id, user.id);
     assert_eq!(order.product_id, product.id);

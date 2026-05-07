@@ -1,0 +1,11 @@
+error: unexpected end of input, #[fixtura(...)] requires at least one field override, e.g. #[fixtura(active = false)]
+ --> tests/fail/fixtura_empty.rs:9:19
+  |
+9 | fn test(#[fixtura()] user: User) {
+  |                   ^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/fixtura_empty.rs:11:2
+   |
+11 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/fixtura_empty.rs`

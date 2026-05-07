@@ -12,7 +12,7 @@ struct Order {
 
 #[fixtura::test]
 fn forward_ref(
-    #[with(user_id = order.user_id)] user: User,
+    #[fixtura(user_id = order.user_id)] user: User,
     order: Order,
 ) {
     let _ = (user, order);

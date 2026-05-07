@@ -26,13 +26,13 @@ fn check_forward_refs(args: &[Arg]) -> syn::Result<()> {
                 if used == arg.ident {
                     return Err(syn::Error::new(
                         used.span(),
-                        format!("`{used}` cannot reference itself in `#[with]`"),
+                        format!("`{used}` cannot reference itself in `#[fixtura]`"),
                     ));
                 }
                 if args[i + 1..].iter().any(|a| a.ident == used) {
                     return Err(syn::Error::new(
                         used.span(),
-                        format!("`{used}` is not yet in scope — `#[with]` expressions are evaluated top-to-bottom"),
+                        format!("`{used}` is not yet in scope — `#[fixtura]` expressions are evaluated top-to-bottom"),
                     ));
                 }
             }

@@ -43,7 +43,7 @@ Multiply this across a test suite and you get walls of setup that obscure what t
 #[fixtura::test]
 fn order_belongs_to_user(
     user: User,
-    #[with(user_id = user.id, status = "pending".to_string())]
+    #[fixtura(user_id = user.id, status = "pending".to_string())]
     order: Order,
 ) {
     assert!(is_billable(&order));
@@ -51,7 +51,7 @@ fn order_belongs_to_user(
 }
 ```
 
-`#[fixtura::test]` injects a fake value for every argument. Use `#[with(...)]` to pin the fields your test cares about — everything else is randomized.
+`#[fixtura::test]` injects a fake value for every argument. Use `#[fixtura(...)]` to pin the fields your test cares about — everything else is randomized.
 
 The only requirement is `#[derive(Dummy)]` on your types.
 
@@ -85,7 +85,7 @@ struct Order {
 ```rust
 #[fixtura::test]
 fn inactive_users_cannot_checkout(
-    #[with(active = false)] user: User,
+    #[fixtura(active = false)] user: User,
     order: Order,
 ) {
     assert!(checkout(&user, &order).is_err());
@@ -98,7 +98,7 @@ fn inactive_users_cannot_checkout(
 #[fixtura::test]
 fn order_belongs_to_user(
     user: User,
-    #[with(user_id = user.id)] order: Order,
+    #[fixtura(user_id = user.id)] order: Order,
 ) {
     assert_eq!(order.user_id, user.id);
 }
@@ -110,8 +110,8 @@ fn order_belongs_to_user(
 #[tokio::test]
 #[fixtura::inject]
 async fn payment_fails_for_inactive_user(
-    #[with(active = false)] user: User,
-    #[with(user_id = user.id)] order: Order,
+    #[fixtura(active = false)] user: User,
+    #[fixtura(user_id = user.id)] order: Order,
 ) {
     assert!(process_payment(&user, &order).await.is_err());
 }
@@ -173,7 +173,7 @@ Place the runner above `#[fixtura::inject]`:
 async fn my_test(user: User) { ... }
 ```
 
-Everything works the same: `#[with(...)]`, cross-references, `#[should_panic]`.
+Everything works the same: `#[fixtura(...)]`, cross-references, `#[should_panic]`.
 
 Add tokio to your dev-dependencies to use it:
 

@@ -56,7 +56,7 @@ async fn find_user_returns_user_for_nonzero_id(user: User) {
 #[tokio::test]
 #[fixtura::inject]
 async fn submit_order_succeeds_with_nonempty_status(
-    #[with(status = "pending".to_string())] order: Order,
+    #[fixtura(status = "pending".to_string())] order: Order,
 ) {
     let result = submit_order(&order).await;
     assert_eq!(result, Ok(order.id));
@@ -64,13 +64,13 @@ async fn submit_order_succeeds_with_nonempty_status(
 
 #[tokio::test]
 #[fixtura::inject]
-async fn submit_order_fails_with_empty_status(#[with(status = String::new())] order: Order) {
+async fn submit_order_fails_with_empty_status(#[fixtura(status = String::new())] order: Order) {
     assert!(submit_order(&order).await.is_err());
 }
 
 #[tokio::test]
 #[fixtura::inject]
-async fn activate_user_sets_active_true(#[with(active = false)] user: User) {
+async fn activate_user_sets_active_true(#[fixtura(active = false)] user: User) {
     let mut user = user;
     activate_user(&mut user).await;
     assert!(user.active);
@@ -80,7 +80,7 @@ async fn activate_user_sets_active_true(#[with(active = false)] user: User) {
 #[fixtura::inject]
 async fn cross_reference_preserved_across_await(
     user: User,
-    #[with(user_id = user.id)] order: Order,
+    #[fixtura(user_id = user.id)] order: Order,
 ) {
     let found = find_user(user.id.max(1)).await;
     assert!(found.is_some());

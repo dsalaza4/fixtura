@@ -6,6 +6,6 @@ struct User {
 }
 
 #[fixtura::test]
-fn test(#[with()] user: User) {
+fn test(#[fixtura()] user: User) {
     let _ = user;
 }
