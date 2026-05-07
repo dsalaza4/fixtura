@@ -1,6 +1,6 @@
 [package]
 name = "fixtura"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Declarative fake data injection for Rust tests. Built on fake-rs."
 license = "MIT"
@@ -10,7 +10,7 @@ keywords = ["testing", "fake", "fixtures", "macros", "dummy"]
 categories = ["development-tools::testing"]
 
 [dependencies]
-fixtura-macros = { path = "../fixtura-macros", version = "0.1.0" }
+fixtura-macros = { path = "../fixtura-macros", version = "0.1.1" }
 
 [dev-dependencies]
 fake = { version = "5", features = ["derive"] }
