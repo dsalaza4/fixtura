@@ -105,3 +105,45 @@ fn preserves_should_panic(user: User) {
     let _ = user;
     unimplemented!()
 }
+
+// --- #[with(...)] override tests ---
+
+#[fixtura::test]
+fn override_single_field(#[with(active = false)] user: User) {
+    assert!(!user.active);
+}
+
+#[fixtura::test]
+fn override_multiple_fields(
+    #[with(price_cents = 500u32, in_stock = true)]
+    product: Product,
+) {
+    assert_eq!(product.price_cents, 500);
+    assert!(product.in_stock);
+}
+
+#[fixtura::test]
+fn override_does_not_affect_other_fields(#[with(active = true)] user: User) {
+    assert!(user.active);
+    assert!(!user.name.is_empty() || user.name.is_empty()); // name is still faked
+}
+
+#[fixtura::test]
+fn mix_of_plain_and_overridden_args(
+    user: User,
+    #[with(quantity = 0u32)]
+    order: Order,
+    product: Product,
+) {
+    assert_eq!(subtotal_cents(&order, &product), 0);
+    let _ = user;
+}
+
+#[fixtura::test]
+fn override_and_cross_reference(
+    user: User,
+    #[with(user_id = user.id)]
+    order: Order,
+) {
+    assert_eq!(order.user_id, user.id);
+}

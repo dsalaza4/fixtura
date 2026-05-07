@@ -1,0 +1,11 @@
+error: unexpected end of input, #[with] requires at least one field override, e.g. #[with(active = false)]
+ --> tests/fail/with_empty.rs:9:16
+  |
+9 | fn test(#[with()] user: User) {
+  |                ^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/with_empty.rs:11:2
+   |
+11 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/with_empty.rs`
