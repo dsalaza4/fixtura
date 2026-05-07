@@ -5,6 +5,7 @@ edition = "2021"
 description = "Declarative fake data injection for Rust tests. Built on fake-rs."
 license = "MIT"
 repository = "https://github.com/dsalaza4/fixtura"
+readme = "../README.md"
 keywords = ["testing", "fake", "fixtures", "macros", "dummy"]
 categories = ["development-tools::testing"]
 
