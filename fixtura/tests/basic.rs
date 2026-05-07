@@ -157,7 +157,6 @@ fn chained_cross_reference(
     assert_eq!(line_item.order_id, order.id);
 }
 
-// prior arg referenced multiple times within the same #[with]
 #[fixtura::test]
 fn cross_reference_same_prior_arg_twice(
     user: User,
@@ -167,16 +166,14 @@ fn cross_reference_same_prior_arg_twice(
     assert_eq!(line_item.order_id, user.id);
 }
 
-// expression using a prior arg, not just a plain field access
 #[fixtura::test]
 fn cross_reference_with_expression(
     order: Order,
-    #[with(quantity = order.quantity.saturating_add(0))] order2: Order,
+    #[with(quantity = order.quantity.saturating_add(1))] order2: Order,
 ) {
-    assert_eq!(order2.quantity, order.quantity);
+    assert_eq!(order2.quantity, order.quantity.saturating_add(1));
 }
 
-// plain arg between two with-override args
 #[fixtura::test]
 fn plain_arg_between_override_args(
     user: User,

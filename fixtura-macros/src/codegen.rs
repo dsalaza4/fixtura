@@ -8,8 +8,10 @@ struct PathRoots(Vec<Ident>);
 
 impl<'ast> Visit<'ast> for PathRoots {
     fn visit_expr_path(&mut self, node: &'ast syn::ExprPath) {
-        if node.qself.is_none() && node.path.segments.len() == 1 {
-            self.0.push(node.path.segments[0].ident.clone());
+        if node.qself.is_none() {
+            if let Some(ident) = node.path.get_ident() {
+                self.0.push(ident.clone());
+            }
         }
         syn::visit::visit_expr_path(self, node);
     }
