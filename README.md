@@ -10,7 +10,7 @@ Built on [`fake-rs`](https://github.com/cksac/fake-rs).
 
 ```toml
 [dev-dependencies]
-fixtura = "0.4.0"
+fixtura = "0.5.0"
 fake = { version = "5", features = ["derive"] }
 ```
 
@@ -119,6 +119,46 @@ async fn payment_fails_for_inactive_user(
 
 **Compatible.** Composes with `#[should_panic]` and any other test attribute.
 
+**Reproducible.** Every test prints its seed on failure — paste it back to replay the exact same values.
+
+```rust
+#[fixtura::test]
+fn my_test(user: User) { ... }
+// On failure: [fixtura] seed = 8317492031748291
+
+#[fixtura::test(seed = 8317492031748291)]
+fn my_test(user: User) { ... }
+// Replays the exact same user
+```
+
+---
+
+## Seeded randomness
+
+Every `#[fixtura::test]` and `#[fixtura::inject]` test automatically uses a seeded RNG. The seed is printed via `eprintln!` — Rust's test runner captures it and shows it only when the test fails, so passing tests are noise-free.
+
+**Replay a failure** by pinning the seed shown in the output:
+
+```rust
+#[fixtura::test(seed = 8317492031748291)]
+fn my_test(user: User) { ... }
+```
+
+**Pin a seed permanently** for deterministic tests that must always use the same data:
+
+```rust
+#[fixtura::test(seed = 42)]
+fn my_test(user: User) { ... }
+```
+
+Works identically with `#[fixtura::inject]`:
+
+```rust
+#[tokio::test]
+#[fixtura::inject(seed = 42)]
+async fn my_test(user: User) { ... }
+```
+
 ---
 
 ## Async tests
@@ -145,4 +185,4 @@ tokio = { version = "1", features = ["rt", "macros"] }
 
 ## Status
 
-Early development — v0.4 available. Seeded randomness is coming. Feedback welcome — open an issue or start a discussion.
+Early development — v0.5 available. Feedback welcome — open an issue or start a discussion.
