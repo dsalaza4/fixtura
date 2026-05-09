@@ -41,6 +41,31 @@ The test signature is the setup.
 
 ---
 
+## Quick start
+
+```toml
+# Cargo.toml
+[dev-dependencies]
+fixtura = "0.7.1"
+fake = { version = "5", features = ["derive"] }
+```
+
+```rust
+use fake::Dummy;
+
+#[derive(Dummy)]
+struct User { id: u32, name: String, active: bool }
+
+#[fixtura::test]
+fn active_user_can_login(#[fixtura(active = true)] user: User) {
+    assert!(user.active);
+}
+```
+
+That's it.
+
+---
+
 ## Install
 
 ```toml
