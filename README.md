@@ -43,13 +43,12 @@ fn order_belongs_to_user(
 
 ## Features
 
-- Inject any `Dummy` type as a test argument — no setup boilerplate
-- Pin specific fields with `#[fixtura(field = value)]`, fake the rest
-- Reference earlier args in overrides: `user_id = user.id`
-- Nested field paths: `address.city = "Portland".to_string()`
-- Seeded RNG — seed printed on failure, replayable on demand
-- Async support via `#[fixtura::inject]` alongside any async runner
-- Framework passthrough — compose with `sqlx::test`, `axum_test`, and others
+- **Zero-boilerplate injection** — declare `Dummy` types as test arguments; fixtura fakes them all
+- **Field overrides** — pin the exact values your test cares about; fixtura fakes the rest, including nested paths
+- **Cross-arg references** — bind a later argument's fields to values from earlier arguments
+- **Seeded RNG** — every run is reproducible; seeds print on failure and replay on demand
+- **Async-ready** — pairs with `#[tokio::test]`, `async-std`, or any async runner via `#[fixtura::inject]`
+- **Framework composable** — mix with `sqlx::test`, `axum_test`, and others using passthrough args
 
 ---
 
