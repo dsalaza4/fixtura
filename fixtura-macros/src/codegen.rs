@@ -1,8 +1,8 @@
-use proc_macro2::{Literal, TokenStream};
+use proc_macro2::{Literal, Span, TokenStream};
 use quote::{quote, quote_spanned};
 use syn::{visit::Visit, FnArg, Ident, ItemFn, Signature};
 
-use crate::parser::{parse_args, Arg};
+use crate::parser::{parse_args, push_error, Arg};
 
 struct PathRoots(Vec<Ident>);
 
@@ -18,25 +18,35 @@ impl<'ast> Visit<'ast> for PathRoots {
 }
 
 fn check_forward_refs(owned: &[&Arg]) -> syn::Result<()> {
+    let mut combined: Option<syn::Error> = None;
+
     for (i, arg) in owned.iter().enumerate() {
         for ov in &arg.overrides {
             let mut roots = PathRoots(vec![]);
             roots.visit_expr(&ov.expr);
             for used in roots.0 {
-                if used == arg.ident {
-                    return Err(syn::Error::new(
+                let err = if used == arg.ident {
+                    Some(syn::Error::new(
                         used.span(),
                         format!("`{used}` cannot reference itself in `#[fixtura]`"),
-                    ));
-                }
-                if owned[i + 1..].iter().any(|a| a.ident == used) {
-                    return Err(syn::Error::new(
+                    ))
+                } else if owned[i + 1..].iter().any(|a| a.ident == used) {
+                    Some(syn::Error::new(
                         used.span(),
                         format!("`{used}` is not yet in scope — `#[fixtura]` expressions are evaluated top-to-bottom"),
-                    ));
+                    ))
+                } else {
+                    None
+                };
+                if let Some(e) = err {
+                    push_error(&mut combined, e);
                 }
             }
         }
+    }
+
+    if let Some(e) = combined {
+        return Err(e);
     }
     Ok(())
 }
@@ -66,6 +76,8 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>
         block,
     } = input;
 
+    let fn_span = sig.fn_token.span;
+
     let args = match parse_args(&sig.inputs, is_inject) {
         Ok(args) => args,
         Err(e) => return e.to_compile_error(),
@@ -85,7 +97,7 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>
     let rng_preamble = if owned.is_empty() {
         quote! {}
     } else {
-        rng_preamble(seed)
+        rng_preamble(seed, fn_span)
     };
     let bindings = owned.iter().map(|a| binding(a));
     // When emitting our own #[test], filter it from attrs to avoid duplication.
@@ -100,7 +112,7 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>
     };
     let stmts = &block.stmts;
 
-    quote! {
+    quote_spanned! { fn_span =>
         #test_attr
         #(#attrs)*
         #vis #sig {
@@ -112,7 +124,7 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>
     }
 }
 
-fn rng_preamble(seed: Option<u64>) -> TokenStream {
+fn rng_preamble(seed: Option<u64>, span: Span) -> TokenStream {
     let seed_expr = match seed {
         Some(n) => {
             let lit = Literal::u64_suffixed(n);
@@ -120,7 +132,7 @@ fn rng_preamble(seed: Option<u64>) -> TokenStream {
         }
         None => quote! { ::fake::rand::random::<u64>() },
     };
-    quote! {
+    quote_spanned! { span =>
         let __fixtura_seed: u64 = #seed_expr;
         eprintln!("[fixtura] seed = {}", __fixtura_seed);
         let mut __fixtura_rng = {

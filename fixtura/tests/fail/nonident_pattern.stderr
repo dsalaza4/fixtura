@@ -1,0 +1,11 @@
+error: #[fixtura::test] only supports simple patterns like `user: User`
+ --> tests/fail/nonident_pattern.rs:9:9
+  |
+9 | fn test((a, b): (u32, u32)) {
+  |         ^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/nonident_pattern.rs:11:2
+   |
+11 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/nonident_pattern.rs`

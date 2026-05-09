@@ -202,6 +202,12 @@ async fn saves_to_db(
 
 ---
 
+## IDE support
+
+rust-analyzer provides syntax highlighting and type-checking inside `#[fixtura(...)]` overrides. Field-name completions are not available — rust-analyzer does not offer completions inside attribute arguments for third-party attributes. Errors such as mistyped field names will surface at compile time as normal type errors.
+
+---
+
 ## Status
 
-Early development — v0.6 available. Feedback welcome — open an issue or start a discussion.
+Early development — v0.7 available. Feedback welcome — open an issue or start a discussion.
