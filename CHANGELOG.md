@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-05-09
+
+### Added
+- MSRV declared as Rust 1.85 (Rust 2024 edition) in both crate manifests
+- MSRV CI job verifying `cargo check` on Rust 1.85
+
 ## [0.8.1] - 2026-05-09
 
 ### Fixed
