@@ -1,24 +1,14 @@
 # fixtura
 
-Declarative fake data injection for Rust tests.
+[![crates.io](https://img.shields.io/crates/v/fixtura.svg)](https://crates.io/crates/fixtura)
+[![docs.rs](https://docs.rs/fixtura/badge.svg)](https://docs.rs/fixtura)
+[![license](https://img.shields.io/crates/l/fixtura.svg)](LICENSE)
 
-Built on [`fake-rs`](https://github.com/cksac/fake-rs).
-
----
-
-## Install
-
-```toml
-[dev-dependencies]
-fixtura = "0.7.0"
-fake = { version = "5", features = ["derive"] }
-```
+Declarative fake data injection for Rust tests, built on [`fake-rs`](https://github.com/cksac/fake-rs).
 
 ---
 
-## The problem
-
-Every test that needs fake data looks like this:
+Instead of this:
 
 ```rust
 #[test]
@@ -33,11 +23,7 @@ fn order_belongs_to_user() {
 }
 ```
 
-Multiply this across a test suite and you get walls of setup that obscure what the test actually asserts.
-
----
-
-## The fix
+Write this:
 
 ```rust
 #[fixtura::test]
@@ -51,9 +37,19 @@ fn order_belongs_to_user(
 }
 ```
 
-`#[fixtura::test]` injects a fake value for every argument. Use `#[fixtura(...)]` to pin the fields your test cares about — everything else is randomized.
+The test signature is the setup.
 
-The only requirement is `#[derive(Dummy)]` on your types.
+---
+
+## Install
+
+```toml
+[dev-dependencies]
+fixtura = "0.7.1"
+fake = { version = "5", features = ["derive"] }
+```
+
+Add `#[derive(Dummy)]` to any type you want injected:
 
 ```rust
 use fake::Dummy;
@@ -70,17 +66,23 @@ struct Order {
     id: u32,
     user_id: u32,
     status: String,
-    total: f64,
 }
 ```
 
 ---
 
-## What you get
+## Usage
 
-**Declarative.** The test signature is the setup. No boilerplate, no helper functions, no builder chains.
+**Inject any `Dummy` type as a test argument:**
 
-**Precise.** Pin exactly the fields your test depends on. Fixtura fakes the rest.
+```rust
+#[fixtura::test]
+fn user_name_is_never_empty(user: User) {
+    assert!(!user.name.is_empty());
+}
+```
+
+**Pin the fields your test cares about — fixtura fakes the rest:**
 
 ```rust
 #[fixtura::test]
@@ -92,7 +94,7 @@ fn inactive_users_cannot_checkout(
 }
 ```
 
-**Relational.** Reference earlier arguments in overrides to keep related objects coherent.
+**Reference earlier arguments to keep data coherent:**
 
 ```rust
 #[fixtura::test]
@@ -104,7 +106,13 @@ fn order_belongs_to_user(
 }
 ```
 
-**Async.** Use `#[fixtura::inject]` with any async test runner.
+---
+
+## Async tests
+
+Use `#[fixtura::inject]` alongside your async runner. It injects args without emitting `#[test]` — the outer attribute does that.
+
+Mark each arg fixtura should own with `#[fixtura]` or `#[fixtura(...)]`. Everything works the same: field overrides, cross-references, `#[should_panic]`.
 
 ```rust
 #[tokio::test]
@@ -117,70 +125,6 @@ async fn payment_fails_for_inactive_user(
 }
 ```
 
-**Compatible.** Composes with `#[should_panic]` and any other test attribute.
-
-**Reproducible.** Every test prints its seed on failure — paste it back to replay the exact same values.
-
-```rust
-#[fixtura::test]
-fn my_test(user: User) { ... }
-// On failure: [fixtura] seed = 8317492031748291
-
-#[fixtura::test(seed = 8317492031748291)]
-fn my_test(user: User) { ... }
-// Replays the exact same user
-```
-
----
-
-## Seeded randomness
-
-Every `#[fixtura::test]` and `#[fixtura::inject]` test automatically uses a seeded RNG. The seed is printed via `eprintln!` — Rust's test runner captures it and shows it only when the test fails, so passing tests are noise-free.
-
-**Replay a failure** by pinning the seed shown in the output:
-
-```rust
-#[fixtura::test(seed = 8317492031748291)]
-fn my_test(user: User) { ... }
-```
-
-**Pin a seed permanently** for deterministic tests that must always use the same data:
-
-```rust
-#[fixtura::test(seed = 42)]
-fn my_test(user: User) { ... }
-```
-
-Works identically with `#[fixtura::inject]`:
-
-```rust
-#[tokio::test]
-#[fixtura::inject(seed = 42)]
-async fn my_test(#[fixtura] user: User) { ... }
-```
-
----
-
-## Async tests
-
-`#[fixtura::inject]` is the async counterpart to `#[fixtura::test]`. It handles arg injection but does not emit `#[test]` — the outer test attribute does that.
-
-Place the runner above `#[fixtura::inject]`:
-
-```rust
-#[tokio::test]      // runs the async runtime
-#[fixtura::inject]  // injects fake args
-async fn my_test(#[fixtura] user: User) { ... }
-```
-
-Mark each arg fixtura should own with `#[fixtura]` or `#[fixtura(...)]`. Everything works the same: field overrides, cross-references, `#[should_panic]`.
-
-Add tokio to your dev-dependencies to use it:
-
-```toml
-tokio = { version = "1", features = ["rt", "macros"] }
-```
-
 ---
 
 ## Framework passthrough
@@ -191,23 +135,43 @@ When combining fixtura with another injecting framework (e.g. `sqlx::test`), mar
 #[sqlx::test]
 #[fixtura::inject]
 async fn saves_to_db(
-    pool: PgPool,                                   // sqlx owns — untouched
-    #[fixtura] user: User,                          // fixtura owns
-    #[fixtura(user_id = user.id)] order: Order,     // fixtura owns, with override
+    pool: PgPool,                                // sqlx owns
+    #[fixtura] user: User,                       // fixtura owns
+    #[fixtura(user_id = user.id)] order: Order,  // fixtura owns, with override
 ) {
     db::save_order(&pool, &user, &order).await.unwrap();
 }
+```
+
+---
+
+## Reproducible failures
+
+Every test uses a seeded RNG. The seed is printed only on failure, so passing tests are silent:
 
 ```
+---- order_belongs_to_user stdout ----
+[fixtura] seed = 8317492031748291
+```
+
+Paste it back to replay the exact same values:
+
+```rust
+#[fixtura::test(seed = 8317492031748291)]
+fn order_belongs_to_user(user: User, order: Order) { ... }
+```
+
+Pin a seed permanently for fully deterministic tests:
+
+```rust
+#[fixtura::test(seed = 42)]
+fn my_test(user: User) { ... }
+```
+
+Works the same with `#[fixtura::inject(seed = 42)]`.
 
 ---
 
 ## IDE support
 
-rust-analyzer provides syntax highlighting and type-checking inside `#[fixtura(...)]` overrides. Field-name completions are not available — rust-analyzer does not offer completions inside attribute arguments for third-party attributes. Errors such as mistyped field names will surface at compile time as normal type errors.
-
----
-
-## Status
-
-Early development — v0.7 available. Feedback welcome — open an issue or start a discussion.
+rust-analyzer provides type-checking and syntax highlighting inside `#[fixtura(...)]` overrides. Field name completions are not available — there is no stable mechanism for proc-macro crates to provide LSP completions inside attribute arguments. Mistyped field names surface at compile time as ordinary type errors.
