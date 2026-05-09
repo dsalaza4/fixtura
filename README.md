@@ -37,36 +37,23 @@ fn order_belongs_to_user(
 }
 ```
 
-The test signature is the setup.
+**The test signature is the setup.**
 
 ---
 
-## Quick start
+## Features
 
-```toml
-# Cargo.toml
-[dev-dependencies]
-fixtura = "0.7.1"
-fake = { version = "5", features = ["derive"] }
-```
-
-```rust
-use fake::Dummy;
-
-#[derive(Dummy)]
-struct User { id: u32, name: String, active: bool }
-
-#[fixtura::test]
-fn active_user_can_login(#[fixtura(active = true)] user: User) {
-    assert!(user.active);
-}
-```
-
-That's it.
+- Inject any `Dummy` type as a test argument — no setup boilerplate
+- Pin specific fields with `#[fixtura(field = value)]`, fake the rest
+- Reference earlier args in overrides: `user_id = user.id`
+- Nested field paths: `address.city = "Portland".to_string()`
+- Seeded RNG — seed printed on failure, replayable on demand
+- Async support via `#[fixtura::inject]` alongside any async runner
+- Framework passthrough — compose with `sqlx::test`, `axum_test`, and others
 
 ---
 
-## Install
+## Installation
 
 ```toml
 [dev-dependencies]
@@ -94,6 +81,22 @@ struct Order {
 }
 ```
 
+### Quick start
+
+```rust
+use fake::Dummy;
+
+#[derive(Dummy)]
+struct User { id: u32, name: String, active: bool }
+
+#[fixtura::test]
+fn active_user_can_login(#[fixtura(active = true)] user: User) {
+    assert!(user.active);
+}
+```
+
+That's it.
+
 ---
 
 ## Usage
@@ -119,6 +122,17 @@ fn inactive_users_cannot_checkout(
 }
 ```
 
+**Nested field paths work too:**
+
+```rust
+#[fixtura::test]
+fn delivery_uses_city(
+    #[fixtura(address.city = "Portland".to_string())] profile: Profile,
+) {
+    assert_eq!(profile.address.city, "Portland");
+}
+```
+
 **Reference earlier arguments to keep data coherent:**
 
 ```rust
@@ -131,13 +145,27 @@ fn order_belongs_to_user(
 }
 ```
 
+**Chain references across multiple args:**
+
+```rust
+#[fixtura::test]
+fn line_item_links_to_user_and_order(
+    user: User,
+    #[fixtura(user_id = user.id)] order: Order,
+    #[fixtura(user_id = user.id, order_id = order.id)] line: LineItem,
+) {
+    assert_eq!(line.user_id, user.id);
+    assert_eq!(line.order_id, order.id);
+}
+```
+
 ---
 
 ## Async tests
 
-Use `#[fixtura::inject]` alongside your async runner. It injects args without emitting `#[test]` — the outer attribute does that.
+Use `#[fixtura::inject]` alongside your async runner. It injects args without emitting `#[test]` — the outer attribute handles that.
 
-Mark each arg fixtura should own with `#[fixtura]` or `#[fixtura(...)]`. Everything works the same: field overrides, cross-references, `#[should_panic]`.
+Mark each arg fixtura should own with `#[fixtura]` or `#[fixtura(...)]`. Field overrides, cross-references, and `#[should_panic]` all work the same.
 
 ```rust
 #[tokio::test]
@@ -172,7 +200,7 @@ async fn saves_to_db(
 
 ## Reproducible failures
 
-Every test uses a seeded RNG. The seed is printed only on failure, so passing tests are silent:
+Every test uses a seeded RNG. The seed is printed only on failure, so passing tests stay silent:
 
 ```
 ---- order_belongs_to_user stdout ----
@@ -186,17 +214,17 @@ Paste it back to replay the exact same values:
 fn order_belongs_to_user(user: User, order: Order) { ... }
 ```
 
-Pin a seed permanently for fully deterministic tests:
-
-```rust
-#[fixtura::test(seed = 42)]
-fn my_test(user: User) { ... }
-```
-
-Works the same with `#[fixtura::inject(seed = 42)]`.
+> [!TIP]
+> Pin a seed permanently for fully deterministic tests:
+> ```rust
+> #[fixtura::test(seed = 42)]
+> fn my_test(user: User) { ... }
+> ```
+> Works the same with `#[fixtura::inject(seed = 42)]`.
 
 ---
 
 ## IDE support
 
-rust-analyzer provides type-checking and syntax highlighting inside `#[fixtura(...)]` overrides. Field name completions are not available — there is no stable mechanism for proc-macro crates to provide LSP completions inside attribute arguments. Mistyped field names surface at compile time as ordinary type errors.
+> [!NOTE]
+> rust-analyzer provides type-checking and syntax highlighting inside `#[fixtura(...)]` overrides. Field name completions are not available — there is no stable mechanism for proc-macro crates to provide LSP completions inside attribute arguments. Mistyped field names surface at compile time as ordinary type errors.
