@@ -56,7 +56,7 @@ fn order_belongs_to_user(
 
 ```toml
 [dev-dependencies]
-fixtura = "0.7.2"
+fixtura = "0.8.0"
 fake = { version = "5", features = ["derive"] }
 ```
 
@@ -177,6 +177,9 @@ async fn payment_fails_for_inactive_user(
 }
 ```
 
+> [!NOTE]
+> `#[fixtura::inject]` must sit **below** your async runner attribute. Rust applies stacked proc-macro attributes from bottom to top: `#[fixtura::inject]` transforms the function body first; `#[tokio::test]` (or your runner) then wraps the result.
+
 ---
 
 ## Framework passthrough
@@ -220,6 +223,33 @@ fn order_belongs_to_user(user: User, order: Order) { ... }
 > fn my_test(user: User) { ... }
 > ```
 > Works the same with `#[fixtura::inject(seed = 42)]`.
+
+---
+
+## Struct types
+
+Plain injection works for named, tuple, and unit structs — any type that implements `Dummy`.
+
+> [!NOTE]
+> `#[fixtura(...)]` field overrides require **named struct fields**. Tuple index syntax (`0`, `1`) cannot be used as a field path because it is not a valid identifier. To pin a value, use a named struct instead:
+>
+> ```rust
+> // Tuple struct — plain injection only:
+> #[derive(Dummy)]
+> struct Point(f64, f64);
+>
+> #[fixtura::test]
+> fn uses_point(p: Point) { let _ = p; }
+>
+> // To pin a value, use a named struct:
+> #[derive(Dummy)]
+> struct Point { x: f64, y: f64 }
+>
+> #[fixtura::test]
+> fn pinned_point(#[fixtura(x = 1.0_f64)] p: Point) {
+>     assert_eq!(p.x, 1.0);
+> }
+> ```
 
 ---
 
