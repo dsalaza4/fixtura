@@ -3,6 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/fixtura.svg)](https://crates.io/crates/fixtura)
 [![docs.rs](https://docs.rs/fixtura/badge.svg)](https://docs.rs/fixtura)
 [![license](https://img.shields.io/crates/l/fixtura.svg)](LICENSE)
+[![msrv](https://img.shields.io/crates/msrv/fixtura.svg)](https://crates.io/crates/fixtura)
 
 Declarative fake data injection for Rust tests, built on [`fake-rs`](https://github.com/cksac/fake-rs).
 
@@ -56,7 +57,7 @@ fn order_belongs_to_user(
 
 ```toml
 [dev-dependencies]
-fixtura = "0.8.2"
+fixtura = "0.8.3"
 fake = { version = "5", features = ["derive"] }
 ```
 

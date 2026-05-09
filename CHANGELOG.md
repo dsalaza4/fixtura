@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-05-09
+
+### Added
+- MSRV badge in README
+- GitHub issue templates (bug report, feature request)
+- Crate-level documentation on docs.rs with quick start, attribute overview, and examples
+
+### Changed
+- Edition bumped from 2021 to 2024 (matches MSRV 1.85)
+
 ## [0.8.2] - 2026-05-09
 
 ### Added
