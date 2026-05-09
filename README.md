@@ -56,7 +56,7 @@ fn order_belongs_to_user(
 
 ```toml
 [dev-dependencies]
-fixtura = "0.7.1"
+fixtura = "0.7.2"
 fake = { version = "5", features = ["derive"] }
 ```
 
