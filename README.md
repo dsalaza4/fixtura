@@ -10,7 +10,7 @@ Built on [`fake-rs`](https://github.com/cksac/fake-rs).
 
 ```toml
 [dev-dependencies]
-fixtura = "0.6.0"
+fixtura = "0.7.0"
 fake = { version = "5", features = ["derive"] }
 ```
 
