@@ -1,0 +1,11 @@
+error: duplicate `#[fixtura]` — only one is allowed per argument
+  --> tests/fail/duplicate_fixtura_inject.rs:14:5
+   |
+14 |     #[fixtura(id = 1u32)]
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/duplicate_fixtura_inject.rs:18:2
+   |
+18 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/duplicate_fixtura_inject.rs`

@@ -1,0 +1,11 @@
+error: `user` cannot reference itself in `#[fixtura]`
+  --> tests/fail/self_ref_inject.rs:11:30
+   |
+11 | async fn test(#[fixtura(id = user.id)] user: User) {
+   |                              ^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/self_ref_inject.rs:13:2
+   |
+13 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/self_ref_inject.rs`

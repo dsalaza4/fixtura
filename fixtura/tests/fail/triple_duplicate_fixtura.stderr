@@ -1,0 +1,17 @@
+error: duplicate `#[fixtura]` — only one is allowed per argument
+  --> tests/fail/triple_duplicate_fixtura.rs:14:5
+   |
+14 |     #[fixtura(active = false)]
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: duplicate `#[fixtura]` — only one is allowed per argument
+  --> tests/fail/triple_duplicate_fixtura.rs:15:5
+   |
+15 |     #[fixtura(name = "x".to_string())]
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/triple_duplicate_fixtura.rs:19:2
+   |
+19 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/triple_duplicate_fixtura.rs`

@@ -112,11 +112,17 @@ fn expand_inner(input: ItemFn, test_attr: Option<TokenStream>, seed: Option<u64>
     };
     let stmts = &block.stmts;
 
+    let fake_import = if owned.is_empty() {
+        quote! {}
+    } else {
+        quote! { use ::fake::Fake; }
+    };
+
     quote_spanned! { fn_span =>
         #test_attr
         #(#attrs)*
         #vis #sig {
-            use ::fake::Fake;
+            #fake_import
             #rng_preamble
             #(#bindings)*
             #(#stmts)*

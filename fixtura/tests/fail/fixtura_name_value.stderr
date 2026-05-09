@@ -1,0 +1,11 @@
+error: expected `#[fixtura]` or `#[fixtura(field = value, ...)]`
+  --> tests/fail/fixtura_name_value.rs:10:11
+   |
+10 | fn test(#[fixtura = 42] user: User) {
+   |           ^^^^^^^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/fixtura_name_value.rs:12:2
+   |
+12 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/fixtura_name_value.rs`

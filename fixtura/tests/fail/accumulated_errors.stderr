@@ -1,0 +1,17 @@
+error: #[fixtura::test] does not support reference arguments — use the owned type
+  --> tests/fail/accumulated_errors.rs:15:15
+   |
+15 | fn test(user: &User, order: &Order) {
+   |               ^^^^^
+
+error: #[fixtura::test] does not support reference arguments — use the owned type
+  --> tests/fail/accumulated_errors.rs:15:29
+   |
+15 | fn test(user: &User, order: &Order) {
+   |                             ^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/fail/accumulated_errors.rs:17:2
+   |
+17 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/fail/accumulated_errors.rs`
