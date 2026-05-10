@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <!-- Background -->
+  <rect width="1280" height="640" fill="#0F172A"/>
+
+  <!-- Grid: 4×4 dots, centered at (540, 320), spacing 64px -->
+  <!-- x: 444, 508, 572, 636  |  y: 224, 288, 352, 416 -->
+
+  <!-- Row 1 -->
+  <circle cx="444" cy="224" r="11" fill="#334155"/>
+  <circle cx="508" cy="224" r="11" fill="#334155"/>
+  <circle cx="572" cy="224" r="11" fill="#334155"/>
+  <circle cx="636" cy="224" r="11" fill="#334155"/>
+
+  <!-- Row 2 — one field is pinned -->
+  <circle cx="444" cy="288" r="11" fill="#334155"/>
+  <circle cx="508" cy="288" r="36" fill="none" stroke="#F97316" stroke-width="3" opacity="0.3"/>
+  <circle cx="508" cy="288" r="22" fill="#F97316"/>
+  <circle cx="572" cy="288" r="11" fill="#334155"/>
+  <circle cx="636" cy="288" r="11" fill="#334155"/>
+
+  <!-- Row 3 -->
+  <circle cx="444" cy="352" r="11" fill="#334155"/>
+  <circle cx="508" cy="352" r="11" fill="#334155"/>
+  <circle cx="572" cy="352" r="11" fill="#334155"/>
+  <circle cx="636" cy="352" r="11" fill="#334155"/>
+
+  <!-- Row 4 -->
+  <circle cx="444" cy="416" r="11" fill="#334155"/>
+  <circle cx="508" cy="416" r="11" fill="#334155"/>
+  <circle cx="572" cy="416" r="11" fill="#334155"/>
+  <circle cx="636" cy="416" r="11" fill="#334155"/>
+
+  <!-- Wordmark -->
+  <text x="676" y="348"
+        font-family="'Courier New', Courier, monospace"
+        font-size="108"
+        font-weight="700"
+        fill="#F8FAFC"
+        letter-spacing="-2">fixtura</text>
+</svg>

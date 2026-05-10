@@ -1,8 +1,8 @@
 use proc_macro2::{Literal, Span, TokenStream};
 use quote::{quote, quote_spanned};
-use syn::{visit::Visit, FnArg, Ident, ItemFn, Signature};
+use syn::{FnArg, Ident, ItemFn, Signature, visit::Visit};
 
-use crate::parser::{parse_args, push_error, Arg};
+use crate::parser::{Arg, parse_args, push_error};
 
 struct PathRoots(Vec<Ident>);
 
@@ -33,7 +33,9 @@ fn check_forward_refs(owned: &[&Arg]) -> syn::Result<()> {
                 } else if owned[i + 1..].iter().any(|a| a.ident == used) {
                     Some(syn::Error::new(
                         used.span(),
-                        format!("`{used}` is not yet in scope — `#[fixtura]` expressions are evaluated top-to-bottom"),
+                        format!(
+                            "`{used}` is not yet in scope — `#[fixtura]` expressions are evaluated top-to-bottom"
+                        ),
                     ))
                 } else {
                     None

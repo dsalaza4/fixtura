@@ -1,5 +1,5 @@
 use proc_macro2::{Span, TokenStream};
-use syn::{parse::ParseStream, punctuated::Punctuated, Expr, FnArg, Ident, LitInt, Token, Type};
+use syn::{Expr, FnArg, Ident, LitInt, Token, Type, parse::ParseStream, punctuated::Punctuated};
 
 pub(crate) fn push_error(combined: &mut Option<syn::Error>, e: syn::Error) {
     match combined {
@@ -79,7 +79,7 @@ fn parse_one(arg: &FnArg, is_inject: bool) -> syn::Result<Arg> {
             return Err(syn::Error::new_spanned(
                 r,
                 "#[fixtura::test] does not support `self`",
-            ))
+            ));
         }
         FnArg::Typed(pt) => pt,
     };

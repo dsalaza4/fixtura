@@ -10,8 +10,8 @@ struct User {
 }
 
 fn fake_with_seed(seed: u64) -> User {
-    use fake::rand::SeedableRng;
     use fake::Fake;
+    use fake::rand::SeedableRng;
     fake::Faker.fake_with_rng(&mut fake::rand::rngs::StdRng::seed_from_u64(seed))
 }
 
