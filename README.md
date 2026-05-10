@@ -1,5 +1,7 @@
 # fixtura
 
+<img src="logo.svg" alt="fixtura" width="360"/>
+
 [![crates.io](https://img.shields.io/crates/v/fixtura.svg)](https://crates.io/crates/fixtura)
 [![docs.rs](https://docs.rs/fixtura/badge.svg)](https://docs.rs/fixtura)
 [![license](https://img.shields.io/crates/l/fixtura.svg)](LICENSE)
